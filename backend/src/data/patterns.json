@@ -1,0 +1,33 @@
+{
+  "_comment": "Hourly visit pattern multipliers based on Indian hospital data (0-23h). 1.0 = average load.",
+  "hourlyLoad": [
+    0.15, 0.10, 0.08, 0.07, 0.08, 0.20,
+    0.55, 0.85, 1.10, 1.40, 1.50, 1.45,
+    1.20, 1.00, 0.95, 0.90, 1.10, 1.35,
+    1.45, 1.30, 1.00, 0.70, 0.40, 0.25
+  ],
+  "_comment2": "Specialty-specific demand weights. General always has highest demand.",
+  "specialtyDemand": {
+    "General":      1.00,
+    "Pediatrics":   0.75,
+    "Cardiology":   0.60,
+    "Orthopedics":  0.55,
+    "Gynecology":   0.50,
+    "Neurology":    0.45,
+    "Oncology":     0.35,
+    "Surgery":      0.40
+  },
+  "_comment3": "Day-of-week multipliers. Monday is busiest (0=Sun, 1=Mon ... 6=Sat).",
+  "dayOfWeekLoad": [0.70, 1.20, 1.05, 1.00, 0.95, 0.90, 0.75],
+  "_comment4": "Government hospitals see 2.5x more patients than private on average.",
+  "typeMultiplier": {
+    "Government": 1.60,
+    "Private":    0.85
+  },
+  "_comment5": "Confidence bonus for hospitals with >4.5 rating (reliable data).",
+  "ratingConfidenceBonus": {
+    "gte4.5": 5,
+    "gte4.0": 2,
+    "below4.0": -5
+  }
+}
