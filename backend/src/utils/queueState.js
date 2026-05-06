@@ -6,6 +6,8 @@
  *   - SSE broadcasting to all connected clients
  */
 
+const { sendHeadsUpEmail } = require('./mailer');
+
 const queues = {};           // "h1::General" → queue object
 const sseClients = {};       // "h1::General" → Set<res>
 
@@ -42,7 +44,7 @@ function getOrCreate(hospital, specialty) {
 
 // ─── Patient: book a slot ─────────────────────────────────────────────────────
 
-function book(hospitalId, specialty, patientName) {
+function book(hospitalId, specialty, patientName, contact = {}) {
   const k = key(hospitalId, specialty);
   const q = queues[k];
   if (!q) return null;
@@ -51,6 +53,9 @@ function book(hospitalId, specialty, patientName) {
   const appt = {
     tokenNumber,
     patientName,
+    phone: contact.phone || null,
+    email: contact.email || null,
+    symptomAnalysis: contact.symptomAnalysis || null,
     status: 'waiting',   // 'waiting' | 'serving' | 'attended' | 'skipped'
     bookedAt: new Date().toISOString(),
   };
@@ -119,6 +124,42 @@ function etaForToken(hospitalId, specialty, tokenNumber) {
   };
 }
 
+// ─── Heads-up email: notify the patient who now has 1 ahead ──────────────────
+
+function notifyOnDeck(q) {
+  // After advancing the queue, the active list is [serving, next-in-line, ...]
+  // We email the patient at index 1 — they have exactly 1 patient ahead.
+  const active = q.appointments
+    .filter((a) => a.status === 'waiting' || a.status === 'serving')
+    .sort((a, b) => a.tokenNumber - b.tokenNumber);
+
+  const onDeck = active[1];
+  if (!onDeck || !onDeck.email || onDeck.headsUpSent) return;
+
+  onDeck.headsUpSent = true; // mark first to avoid duplicate sends
+
+  const eta = etaForToken(q.hospitalId, q.specialty, onDeck.tokenNumber);
+
+  sendHeadsUpEmail(onDeck.email, {
+    patientName: onDeck.patientName,
+    token: onDeck.tokenNumber,
+    hospitalName: q.hospitalName,
+    specialty: q.specialty,
+    currentToken: q.currentToken,
+    etaTime: eta?.etaTime || null,
+  })
+    .then((r) => {
+      if (!r.sent) {
+        console.warn('[heads-up] not sent:', r.reason);
+        onDeck.headsUpSent = false; // allow retry next time
+      }
+    })
+    .catch((err) => {
+      console.error('[heads-up] failed:', err.message);
+      onDeck.headsUpSent = false;
+    });
+}
+
 // ─── Receptionist actions ─────────────────────────────────────────────────────
 
 function serveNext(hospitalId, specialty) {
@@ -143,6 +184,7 @@ function serveNext(hospitalId, specialty) {
     q.currentToken = next.tokenNumber;
   }
 
+  notifyOnDeck(q);
   broadcast(k);
   return snapshot(q);
 }
@@ -168,6 +210,7 @@ function skipCurrent(hospitalId, specialty) {
     q.currentToken = next.tokenNumber;
   }
 
+  notifyOnDeck(q);
   broadcast(k);
   return snapshot(q);
 }

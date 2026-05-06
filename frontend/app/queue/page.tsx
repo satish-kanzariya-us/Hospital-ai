@@ -5,10 +5,13 @@ import {
   bookToken,
   getPatientETA,
   getSSEUrl,
+  analyzeSymptoms,
   type BookResponse,
   type ETAResponse,
   type UrgencyLevel,
+  type SymptomAnalysis,
 } from "@/lib/api";
+import SymptomBadge from "@/components/SymptomBadge";
 
 const HOSPITALS: Record<string, { name: string; city: string; specialties: string[] }> = {
   h1:  { name: "AIIMS Delhi",                  city: "Delhi",      specialties: ["General","Cardiology","Neurology","Orthopedics","Pediatrics"] },
@@ -40,6 +43,11 @@ function BookingForm({ onBooked }: { onBooked: (b: BookResponse) => void }) {
   const [hospitalId, setHospitalId] = useState("h1");
   const [specialty, setSpecialty]   = useState("General");
   const [name, setName]             = useState("");
+  const [email, setEmail]           = useState("");
+  const [phone, setPhone]           = useState("");
+  const [problem, setProblem]       = useState("");
+  const [analysis, setAnalysis]     = useState<SymptomAnalysis | null>(null);
+  const [analyzing, setAnalyzing]   = useState(false);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState("");
 
@@ -50,11 +58,60 @@ function BookingForm({ onBooked }: { onBooked: (b: BookResponse) => void }) {
     if (!availableSpecialties.includes(specialty)) setSpecialty(availableSpecialties[0] ?? "General");
   }, [hospitalId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Debounced symptom analysis: API fires 1s after the user stops typing.
+  // The spinner only appears once the timer fires, not on every keystroke.
+  // A reqId guards against stale results overwriting a newer one.
+  const reqIdRef = useRef(0);
+  useEffect(() => {
+    const desc = problem.trim();
+    if (desc.length < 4) {
+      setAnalysis(null);
+      setAnalyzing(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const myReqId = ++reqIdRef.current;
+      setAnalyzing(true);
+      try {
+        const result = await analyzeSymptoms(desc);
+        if (reqIdRef.current !== myReqId) return; // stale
+        setAnalysis(result);
+        if (result.recommended_type === "EMERGENCY" && availableSpecialties.includes("General")) {
+          setSpecialty("General");
+        }
+      } catch {
+        /* ignore — analysis is optional */
+      } finally {
+        if (reqIdRef.current === myReqId) setAnalyzing(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [problem]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function isValidEmail(value: string) {
+    if (!value) return true; // email is optional
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  function isValidPhone(value: string) {
+    if (!value) return true; // phone is optional
+    const digits = value.replace(/\D/g, "");
+    return digits.length >= 7 && digits.length <= 15;
+  }
+
   async function handleBook() {
     if (!name.trim()) { setError("Please enter your name."); return; }
+    if (!isValidEmail(email.trim())) { setError("Please enter a valid email address."); return; }
+    if (!isValidPhone(phone.trim())) { setError("Please enter a valid phone number."); return; }
     setLoading(true); setError("");
     try {
-      const res = await bookToken(hospitalId, specialty, name.trim());
+      const res = await bookToken(hospitalId, specialty, name.trim(), {
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        symptomAnalysis: analysis,
+      });
       onBooked(res);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Booking failed. Please try again.");
@@ -81,8 +138,35 @@ function BookingForm({ onBooked }: { onBooked: (b: BookResponse) => void }) {
             placeholder="e.g. Rajesh Kumar"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleBook()}
           />
+        </div>
+
+        {/* Email + Phone */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Email <span className="text-gray-400 font-normal text-xs">(for confirmation)</span>
+            </label>
+            <input
+              type="email"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Phone <span className="text-gray-400 font-normal text-xs">(for record)</span>
+            </label>
+            <input
+              type="tel"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              placeholder="+91 98765 43210"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Hospital */}
@@ -109,6 +193,37 @@ function BookingForm({ onBooked }: { onBooked: (b: BookResponse) => void }) {
           >
             {availableSpecialties.map((s) => <option key={s}>{s}</option>)}
           </select>
+        </div>
+
+        {/* Problem description + AI symptom analysis */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Describe your problem{" "}
+            <span className="text-gray-400 font-normal">(AI will triage your symptoms)</span>
+          </label>
+          <textarea
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+            placeholder="e.g. I have severe chest pain and difficulty breathing..."
+            rows={3}
+            value={problem}
+            onChange={(e) => setProblem(e.target.value)}
+          />
+          {analyzing && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+              <span className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+              AI analyzing your symptoms...
+            </div>
+          )}
+          {analysis && !analyzing && (
+            <div className="mt-3">
+              <SymptomBadge analysis={analysis} />
+              {analysis.severity === "CRITICAL" && (
+                <p className="mt-2 text-xs text-red-700 font-semibold">
+                  ⚠️ This may be an emergency. Please call 108 or go to the nearest emergency room.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {error && (
@@ -196,6 +311,7 @@ function TokenCard({ booking }: { booking: BookResponse }) {
 
           <div className="border-t border-white/20 pt-4 space-y-1">
             <p className="text-white font-semibold text-sm">{booking.patientName}</p>
+            {booking.phone && <p className="text-white/70 text-xs">📞 {booking.phone}</p>}
             <p className="text-white/70 text-xs">{booking.hospitalName} · {booking.specialty}</p>
           </div>
 
@@ -227,6 +343,26 @@ function TokenCard({ booking }: { booking: BookResponse }) {
           </p>
         </motion.div>
       </AnimatePresence>
+
+      {/* Email confirmation hint */}
+      {booking.emailQueued && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 flex items-center gap-3"
+        >
+          <span className="text-2xl">📧</span>
+          <div>
+            <p className="text-blue-700 font-bold text-sm">Confirmation sent</p>
+            <p className="text-blue-600 text-xs">Check your inbox for full token details.</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* AI symptom analysis from booking */}
+      {booking.symptomAnalysis && (
+        <SymptomBadge analysis={booking.symptomAnalysis} />
+      )}
 
       {/* Stats grid */}
       {eta && eta.status !== "attended" && eta.status !== "skipped" && (

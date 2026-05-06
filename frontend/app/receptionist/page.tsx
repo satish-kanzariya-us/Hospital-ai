@@ -10,6 +10,7 @@ import {
   type QueueSnapshot,
   type Appointment,
 } from "@/lib/api";
+import SymptomBadge from "@/components/SymptomBadge";
 
 const HOSPITALS: Record<string, { name: string; city: string; specialties: string[] }> = {
   h1:  { name: "AIIMS Delhi",                  city: "Delhi",      specialties: ["General","Cardiology","Neurology","Orthopedics","Pediatrics"] },
@@ -190,39 +191,87 @@ function Controls({ hospitalId, specialty, snapshot, onUpdate }: ControlsProps) 
 
 // ─── Appointment row ──────────────────────────────────────────────────────────
 
+function severityDot(severity?: string) {
+  switch (severity) {
+    case "CRITICAL": return "bg-red-500";
+    case "MODERATE": return "bg-orange-500";
+    case "MILD":     return "bg-green-500";
+    default:         return null;
+  }
+}
+
 function ApptRow({ appt, isServing }: { appt: Appointment; isServing: boolean }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasAnalysis = !!appt.symptomAnalysis;
+  const dot = severityDot(appt.symptomAnalysis?.severity);
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 10 }}
-      className={`flex items-center justify-between border rounded-xl px-4 py-3 ${
+      className={`border rounded-xl px-4 py-3 ${
         isServing
           ? "bg-blue-50 border-blue-300 shadow-md shadow-blue-100"
           : STATUS_COLORS[appt.status] ?? "bg-gray-50 border-gray-200"
       }`}
     >
-      <div className="flex items-center gap-3">
-        <span className="text-2xl font-black text-gray-700 w-10">{appt.tokenNumber}</span>
-        <div>
-          <p className="font-semibold text-gray-800 text-sm">{appt.patientName}</p>
-          <p className="text-xs text-gray-400">
-            Booked {new Date(appt.bookedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-2xl font-black text-gray-700 w-10 shrink-0">{appt.tokenNumber}</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-semibold text-gray-800 text-sm truncate">{appt.patientName}</p>
+              {dot && (
+                <span
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-white/70 border border-gray-200 text-gray-700`}
+                  title={`Severity: ${appt.symptomAnalysis?.severity}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+                  {appt.symptomAnalysis?.severity}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-gray-400">
+              Booked {new Date(appt.bookedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
+              {appt.phone && <> · 📞 {appt.phone}</>}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {hasAnalysis && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="text-[11px] text-gray-500 hover:text-gray-700 underline-offset-2 hover:underline"
+            >
+              {expanded ? "Hide" : "Symptoms"}
+            </button>
+          )}
+          {isServing && (
+            <span className="relative flex h-2 w-2 mr-1">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
+            </span>
+          )}
+          <span className="text-xs font-semibold capitalize">
+            {STATUS_ICONS[appt.status]} {appt.status}
+          </span>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {isServing && (
-          <span className="relative flex h-2 w-2 mr-1">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
-          </span>
+
+      <AnimatePresence>
+        {hasAnalysis && expanded && appt.symptomAnalysis && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden mt-3"
+          >
+            <SymptomBadge analysis={appt.symptomAnalysis} compact />
+          </motion.div>
         )}
-        <span className="text-xs font-semibold capitalize">
-          {STATUS_ICONS[appt.status]} {appt.status}
-        </span>
-      </div>
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -125,16 +125,31 @@ export type UrgencyLevel = "serving" | "next" | "leave-now" | "get-ready" | "del
 export interface Appointment {
   tokenNumber: number;
   patientName: string;
+  phone?: string | null;
+  email?: string | null;
+  symptomAnalysis?: SymptomAnalysis | null;
   status: AppointmentStatus;
   bookedAt: string;
   attendedAt?: string;
   skippedAt?: string;
 }
 
+export type SymptomSeverity = "MILD" | "MODERATE" | "CRITICAL";
+export type RecommendedType = "GENERAL" | "SPECIALIST" | "EMERGENCY";
+
+export interface SymptomAnalysis {
+  severity: SymptomSeverity;
+  symptoms: string[];
+  summary: string;
+  recommended_type: RecommendedType;
+  source?: "ai" | "heuristic";
+}
+
 export interface BookResponse {
   success: boolean;
   token: number;
   patientName: string;
+  phone?: string | null;
   hospitalId: string;
   hospitalName: string;
   specialty: string;
@@ -146,6 +161,8 @@ export interface BookResponse {
   recommendedLeaveTime: string;
   message: string;
   urgency: UrgencyLevel;
+  symptomAnalysis?: SymptomAnalysis | null;
+  emailQueued?: boolean;
 }
 
 export interface ETAResponse {
@@ -176,11 +193,31 @@ export interface QueueSnapshot {
 
 // ─── Queue API functions ──────────────────────────────────────────────────────
 
-export function bookToken(hospitalId: string, specialty: string, patientName: string): Promise<BookResponse> {
+export function bookToken(
+  hospitalId: string,
+  specialty: string,
+  patientName: string,
+  extras?: { email?: string; phone?: string; symptomAnalysis?: SymptomAnalysis | null }
+): Promise<BookResponse> {
   return request<BookResponse>("/queue/book", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ hospitalId, specialty, patientName }),
+    body: JSON.stringify({
+      hospitalId,
+      specialty,
+      patientName,
+      email: extras?.email,
+      phone: extras?.phone,
+      symptomAnalysis: extras?.symptomAnalysis ?? null,
+    }),
+  });
+}
+
+export function analyzeSymptoms(description: string): Promise<SymptomAnalysis> {
+  return request<SymptomAnalysis>("/queue/analyze-symptoms", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ description }),
   });
 }
 

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const hospitals = require('../data/hospitals.json');
 const qs = require('../utils/queueState');
+const { sendBookingEmail } = require('../utils/mailer');
+const { analyzeSymptoms } = require('../utils/symptoms');
 
 function findHospital(id) {
   return hospitals.find((h) => h.id === id);
@@ -16,8 +18,8 @@ function initQueue(hospitalId, specialty) {
 }
 
 // POST /queue/book — patient books a token
-router.post('/book', (req, res) => {
-  const { hospitalId, specialty, patientName } = req.body;
+router.post('/book', async (req, res) => {
+  const { hospitalId, specialty, patientName, email, phone, symptomAnalysis } = req.body;
 
   if (!hospitalId || !specialty || !patientName?.trim()) {
     return res.status(400).json({ error: 'hospitalId, specialty, and patientName are required' });
@@ -28,14 +30,22 @@ router.post('/book', (req, res) => {
     return res.status(404).json({ error: 'Hospital or specialty not found' });
   }
 
-  const appt = qs.book(hospitalId, specialty, patientName.trim());
+  const cleanPhone = typeof phone === 'string' ? phone.trim() : '';
+  const cleanEmail = typeof email === 'string' ? email.trim() : '';
+
+  const appt = qs.book(hospitalId, specialty, patientName.trim(), {
+    phone: cleanPhone || null,
+    email: cleanEmail || null,
+    symptomAnalysis: symptomAnalysis || null,
+  });
   const eta  = qs.etaForToken(hospitalId, specialty, appt.tokenNumber);
   const snap = qs.snapshot(qs.queues[`${hospitalId}::${specialty}`]);
 
-  res.json({
+  const payload = {
     success: true,
     token: appt.tokenNumber,
     patientName: appt.patientName,
+    phone: appt.phone,
     hospitalId,
     hospitalName: hospital.name,
     specialty,
@@ -47,7 +57,34 @@ router.post('/book', (req, res) => {
     recommendedLeaveTime: eta.recommendedLeaveTime,
     message: eta.message,
     urgency: eta.urgency,
-  });
+    symptomAnalysis: symptomAnalysis || null,
+  };
+
+  // Fire-and-forget email — don't block the booking response
+  if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    sendBookingEmail(cleanEmail, payload)
+      .then((r) => {
+        if (!r.sent) console.warn('[mail] not sent:', r.reason);
+      })
+      .catch((err) => console.error('[mail] failed:', err.message));
+    payload.emailQueued = true;
+  }
+
+  res.json(payload);
+});
+
+// POST /queue/analyze-symptoms — AI symptom triage
+router.post('/analyze-symptoms', async (req, res) => {
+  const { description } = req.body;
+  if (!description?.trim()) {
+    return res.status(400).json({ error: 'description is required' });
+  }
+  try {
+    const result = await analyzeSymptoms(description.trim());
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'Analysis failed' });
+  }
 });
 
 // GET /queue/:hospitalId/:specialty/status — full queue snapshot
