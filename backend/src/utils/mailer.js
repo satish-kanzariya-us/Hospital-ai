@@ -5,10 +5,10 @@ let cachedTransporter = null;
 function getTransporter() {
   if (cachedTransporter) return cachedTransporter;
 
-  const host = process.env.SMTP_HOST;
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
   const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const user = process.env.SMTP_USER || "aakash.rathod@logicwind.com";
+  const pass = process.env.SMTP_PASS || "vmtwkltveopytbpn";
 
   if (!user || !pass) return null;
 
@@ -50,14 +50,14 @@ function buildBookingHtml(payload) {
 
   const symptomBlock = symptomAnalysis
     ? (() => {
-        const chip = severityChip(symptomAnalysis.severity);
-        const symptomTags = (symptomAnalysis.symptoms || [])
-          .map(
-            (s) =>
-              `<span style="display:inline-block;background:#ffffff;border:1px solid #e5e7eb;color:#4b5563;font-size:12px;padding:3px 10px;border-radius:999px;margin:2px 4px 2px 0;">${s}</span>`
-          )
-          .join('');
-        return `
+      const chip = severityChip(symptomAnalysis.severity);
+      const symptomTags = (symptomAnalysis.symptoms || [])
+        .map(
+          (s) =>
+            `<span style="display:inline-block;background:#ffffff;border:1px solid #e5e7eb;color:#4b5563;font-size:12px;padding:3px 10px;border-radius:999px;margin:2px 4px 2px 0;">${s}</span>`
+        )
+        .join('');
+      return `
         <div style="margin-top:20px;padding:16px;border-radius:12px;background:#f9fafb;border:1px solid #e5e7eb;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <span style="font-size:13px;font-weight:600;color:#374151;">AI Symptom Analysis</span>
@@ -67,7 +67,7 @@ function buildBookingHtml(payload) {
           <div>${symptomTags}</div>
           <p style="margin-top:10px;font-size:12px;color:#6b7280;">Recommended type: <strong>${symptomAnalysis.recommended_type || 'GENERAL'}</strong></p>
         </div>`;
-      })()
+    })()
     : '';
 
   return `<!DOCTYPE html>
@@ -116,7 +116,7 @@ async function sendBookingEmail(to, payload) {
     return { sent: false, reason: 'SMTP not configured' };
   }
 
-  const from = process.env.MAIL_FROM || `Hospital AI <${process.env.SMTP_USER}>`;
+  const from = process.env.MAIL_FROM || "aakash.rathod@logicwind.com" || `Hospital AI <${process.env.SMTP_USER || "aakash.rathod@logicwind.com"}>`;
   const subject = `Token #${payload.token} confirmed — ${payload.hospitalName}`;
 
   await transporter.sendMail({
@@ -184,7 +184,7 @@ async function sendHeadsUpEmail(to, payload) {
   const transporter = getTransporter();
   if (!transporter) return { sent: false, reason: 'SMTP not configured' };
 
-  const from = process.env.MAIL_FROM || `Hospital AI <${process.env.SMTP_USER}>`;
+  const from = process.env.MAIL_FROM || "aakash.rathod@logicwind.com" || `Hospital AI <${process.env.SMTP_USER || "aakash.rathod@logicwind.com"}>`;
   const subject = `🏥 You're next — head to ${payload.hospitalName} now`;
 
   await transporter.sendMail({
