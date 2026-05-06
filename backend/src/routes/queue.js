@@ -38,7 +38,7 @@ router.post('/book', async (req, res) => {
     email: cleanEmail || null,
     symptomAnalysis: symptomAnalysis || null,
   });
-  const eta  = qs.etaForToken(hospitalId, specialty, appt.tokenNumber);
+  const eta = qs.etaForToken(hospitalId, specialty, appt.tokenNumber);
   const snap = qs.snapshot(qs.queues[`${hospitalId}::${specialty}`]);
 
   const payload = {
@@ -71,6 +71,40 @@ router.post('/book', async (req, res) => {
   }
 
   res.json(payload);
+});
+
+// GET /queue/test-mail?email=foo@gmail.com — send a sample booking email
+router.get('/test-mail', async (req, res) => {
+  const email = typeof req.query.email === 'string' ? req.query.email.trim() : '';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ sent: false, error: 'Provide a valid ?email=' });
+  }
+
+  const samplePayload = {
+    patientName: 'Test Patient',
+    phone: '+91 111111111111111',
+    token: 42,
+    hospitalName: 'Hospital AI Demo',
+    specialty: 'General Medicine',
+    currentToken: 40,
+    patientsAhead: 1,
+    estimatedWaitMinutes: 10,
+    etaTime: '11:30 AM',
+    recommendedLeaveTime: '11:15 AM',
+    message: 'This is a test email from Hospital AI.',
+    symptomAnalysis: null,
+  };
+
+  try {
+    const result = await sendBookingEmail(email, samplePayload);
+    console.log("🚀 ~ result:", result)
+    if (!result.sent) {
+      return res.status(500).json({ sent: false, to: email, result });
+    }
+    return res.json({ sent: true, to: email, result, subject: `Token #${samplePayload.token} confirmed — ${samplePayload.hospitalName}` });
+  } catch (err) {
+    return res.status(500).json({ sent: false, to: email, error: err.message });
+  }
 });
 
 // POST /queue/analyze-symptoms — AI symptom triage

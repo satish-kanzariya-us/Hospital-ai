@@ -131,7 +131,7 @@ async function sendBookingEmail(to, payload) {
   const from = process.env.MAIL_FROM || "aakash.rathod@logicwind.com" || `Hospital AI <${process.env.SMTP_USER || "aakash.rathod@logicwind.com"}>`;
   const subject = `Token #${payload.token} confirmed — ${payload.hospitalName}`;
 
-  await transporter.sendMail({
+  const data = await transporter.sendMail({
     from,
     to,
     subject,
@@ -149,7 +149,7 @@ Leave home by: ${payload.recommendedLeaveTime}
 ${payload.message || ''}`,
   });
 
-  return { sent: true };
+  return { sent: true, data };
 }
 
 function buildHeadsUpHtml(payload) {
@@ -199,7 +199,7 @@ async function sendHeadsUpEmail(to, payload) {
   const from = process.env.MAIL_FROM || "aakash.rathod@logicwind.com" || `Hospital AI <${process.env.SMTP_USER || "aakash.rathod@logicwind.com"}>`;
   const subject = `🏥 You're next — head to ${payload.hospitalName} now`;
 
-  await transporter.sendMail({
+  const response = await transporter.sendMail({
     from,
     to,
     subject,
@@ -213,8 +213,9 @@ ${payload.etaTime ? `Expected turn: ${payload.etaTime}` : ''}
 
 Please head to the hospital right away so you don't miss your turn.`,
   });
+  console.log("🚀 ~ sendHeadsUpEmail ~ response:", response)
 
-  return { sent: true };
+  return { sent: true, response };
 }
 
 module.exports = { sendBookingEmail, sendHeadsUpEmail };
