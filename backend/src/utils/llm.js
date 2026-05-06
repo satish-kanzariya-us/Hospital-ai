@@ -3,7 +3,12 @@ const hospitals = require('../data/hospitals.json');
 const { calculateWaitTime, getBestVisitTime } = require('./waitTime');
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'qwen/qwen-2.5-72b-instruct';
+// Preferred free instruct models in priority order; OpenRouter picks the first available
+const MODELS = [
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemma-4-31b-it:free',
+  'openai/gpt-oss-20b:free',
+];
 
 /**
  * Build a real-time hospital snapshot for the system prompt
@@ -94,7 +99,8 @@ async function callLLM(message, context = {}) {
       'X-Title': 'Hospital AI Queue Predictor',
     },
     body: JSON.stringify({
-      model: MODEL,
+      models: MODELS,
+      route: 'fallback',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: message },
@@ -104,13 +110,16 @@ async function callLLM(message, context = {}) {
     }),
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`OpenRouter error ${response.status}: ${err}`);
+    const errMsg = data?.error?.message || JSON.stringify(data?.error) || `HTTP ${response.status}`;
+    throw new Error(`OpenRouter: ${errMsg}`);
   }
 
-  const data = await response.json();
-  const reply = data?.choices?.[0]?.message?.content?.trim();
+  const msg = data?.choices?.[0]?.message;
+  // Some thinking models return content=null with the answer in reasoning
+  const reply = (msg?.content || msg?.reasoning || '').trim();
 
   if (!reply) throw new Error('Empty response from LLM');
   return reply;

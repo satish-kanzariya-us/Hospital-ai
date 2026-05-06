@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
     res.json({ reply, context });
   } catch (err) {
     console.error('Chat error:', err.message);
-    res.status(500).json({ error: 'AI assistant unavailable. Please try again.' });
+    res.status(500).json({ error: err.message || 'AI assistant unavailable. Please try again.' });
   }
 });
 
