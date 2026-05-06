@@ -29,6 +29,10 @@ function getTransporter() {
     port,
     secure: port === 465,
     auth: { user, pass },
+    family: 4, // force IPv4 — some hosts (e.g. Vercel/containers) lack IPv6 egress, causing ENETUNREACH
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 20_000,
   });
   return cachedTransporter;
 }
