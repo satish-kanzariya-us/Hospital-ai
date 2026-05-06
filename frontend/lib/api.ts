@@ -116,3 +116,99 @@ export function sendChatMessage(
     body: JSON.stringify({ message, context }),
   });
 }
+
+// ─── Queue types ──────────────────────────────────────────────────────────────
+
+export type AppointmentStatus = "waiting" | "serving" | "attended" | "skipped";
+export type UrgencyLevel = "serving" | "next" | "leave-now" | "get-ready" | "delayed" | "waiting" | "attended" | "skipped";
+
+export interface Appointment {
+  tokenNumber: number;
+  patientName: string;
+  status: AppointmentStatus;
+  bookedAt: string;
+  attendedAt?: string;
+  skippedAt?: string;
+}
+
+export interface BookResponse {
+  success: boolean;
+  token: number;
+  patientName: string;
+  hospitalId: string;
+  hospitalName: string;
+  specialty: string;
+  currentToken: number;
+  totalWaiting: number;
+  patientsAhead: number;
+  estimatedWaitMinutes: number;
+  etaTime: string;
+  recommendedLeaveTime: string;
+  message: string;
+  urgency: UrgencyLevel;
+}
+
+export interface ETAResponse {
+  status: AppointmentStatus;
+  tokenNumber: number;
+  patientName: string;
+  patientsAhead: number;
+  estimatedWaitMinutes: number;
+  etaTime: string;
+  recommendedLeaveTime: string;
+  currentToken: number;
+  delayMinutes: number;
+  urgency: UrgencyLevel;
+  message: string;
+}
+
+export interface QueueSnapshot {
+  hospitalId: string;
+  hospitalName: string;
+  specialty: string;
+  currentToken: number;
+  delayMinutes: number;
+  avgServiceTime: number;
+  appointments: Appointment[];
+  waitingCount: number;
+  servedCount: number;
+}
+
+// ─── Queue API functions ──────────────────────────────────────────────────────
+
+export function bookToken(hospitalId: string, specialty: string, patientName: string): Promise<BookResponse> {
+  return request<BookResponse>("/queue/book", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hospitalId, specialty, patientName }),
+  });
+}
+
+export function getQueueStatus(hospitalId: string, specialty: string): Promise<QueueSnapshot> {
+  return request<QueueSnapshot>(`/queue/${hospitalId}/${encodeURIComponent(specialty)}/status`);
+}
+
+export function getPatientETA(hospitalId: string, specialty: string, token: number): Promise<ETAResponse> {
+  return request<ETAResponse>(`/queue/${hospitalId}/${encodeURIComponent(specialty)}/${token}/eta`);
+}
+
+export function queueNext(hospitalId: string, specialty: string): Promise<QueueSnapshot> {
+  return request<QueueSnapshot>(`/queue/${hospitalId}/${encodeURIComponent(specialty)}/next`, { method: "POST" });
+}
+
+export function queueSkip(hospitalId: string, specialty: string): Promise<QueueSnapshot> {
+  return request<QueueSnapshot>(`/queue/${hospitalId}/${encodeURIComponent(specialty)}/skip`, { method: "POST" });
+}
+
+export function queueDelay(hospitalId: string, specialty: string, minutes: number): Promise<{ delayMinutes: number }> {
+  return request<{ delayMinutes: number }>(`/queue/${hospitalId}/${encodeURIComponent(specialty)}/delay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ minutes }),
+  });
+}
+
+export function getSSEUrl(hospitalId: string, specialty: string): string {
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  return `${base}/queue/${hospitalId}/${encodeURIComponent(specialty)}/stream`;
+}

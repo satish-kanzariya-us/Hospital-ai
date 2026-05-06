@@ -5,7 +5,9 @@ import { motion } from "framer-motion";
 
 const links = [
   { href: "/", label: "Home", icon: "🏠" },
-  { href: "/dashboard", label: "Dashboard", icon: "📊" },
+  { href: "/queue", label: "My Queue", icon: "🎫" },
+  { href: "/receptionist", label: "Staff", icon: "🏥" },
+  { href: "/dashboard", label: "Predict", icon: "📊" },
   { href: "/recommend", label: "Recommend", icon: "🏆" },
   { href: "/chat", label: "AI Chat", icon: "🤖" },
 ];

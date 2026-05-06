@@ -6,10 +6,10 @@ const cities = ["Delhi", "Mumbai", "Chennai", "Bangalore", "Chandigarh"];
 const specialties = ["General", "Cardiology", "Neurology", "Orthopedics", "Pediatrics", "Oncology", "Gynecology"];
 
 const features = [
-  { icon: "⏱", title: "Wait Time Prediction", desc: "Real-time queue estimates using historical patterns + peak-hour AI.", color: "from-blue-500 to-cyan-500" },
-  { icon: "🏆", title: "Smart Recommendations", desc: "Least crowded hospital ranked by wait time, rating, and occupancy.", color: "from-indigo-500 to-purple-500" },
-  { icon: "🤖", title: "AI Chat Assistant",    desc: "Ask anything in plain language. Emergency detection built in.", color: "from-purple-500 to-pink-500" },
-  { icon: "📊", title: "Live Simulation",       desc: "24-hour queue timeline so you know exactly when to leave home.", color: "from-pink-500 to-rose-500" },
+  { icon: "🎫", title: "Smart Token Queue",     desc: "Book a token, get your real ETA, and arrive exactly when it's your turn.", color: "from-blue-500 to-cyan-500",   href: "/queue" },
+  { icon: "🏥", title: "Receptionist Dashboard",desc: "Mark attended, skip, add doctor delays — all patients update instantly.", color: "from-indigo-500 to-purple-500", href: "/receptionist" },
+  { icon: "🤖", title: "AI Chat Assistant",     desc: "Ask anything in plain language. Emergency detection built in.",           color: "from-purple-500 to-pink-500",  href: "/chat" },
+  { icon: "🏆", title: "Smart Recommendations", desc: "Least crowded hospital ranked by wait time, rating, and occupancy.",     color: "from-pink-500 to-rose-500",    href: "/recommend" },
 ];
 
 const stats = [
@@ -81,13 +81,22 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-wrap gap-4 justify-center mb-16"
           >
-            <Link href="/recommend">
+            <Link href="/queue">
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(37,99,235,0.3)" }}
                 whileTap={{ scale: 0.97 }}
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 text-base"
               >
-                🏆 Find Best Hospital
+                🎫 Get My Token
+              </motion.button>
+            </Link>
+            <Link href="/receptionist">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-8 py-4 bg-white text-indigo-600 font-bold rounded-2xl border-2 border-indigo-200 shadow-md text-base"
+              >
+                🏥 Receptionist View
               </motion.button>
             </Link>
             <Link href="/chat">
@@ -96,7 +105,7 @@ export default function Home() {
                 whileTap={{ scale: 0.97 }}
                 className="px-8 py-4 bg-white text-blue-600 font-bold rounded-2xl border-2 border-blue-200 shadow-md text-base"
               >
-                🤖 Ask AI Assistant
+                🤖 Ask AI
               </motion.button>
             </Link>
           </motion.div>
@@ -131,21 +140,22 @@ export default function Home() {
         </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-              whileHover={{ y: -6 }}
-              className="bg-white rounded-2xl border border-gray-100 p-6 shadow-md card-hover"
-            >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl mb-4 shadow-lg`}>
-                {f.icon}
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
-            </motion.div>
+            <Link key={f.title} href={f.href}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ y: -6 }}
+                className="bg-white rounded-2xl border border-gray-100 p-6 shadow-md card-hover cursor-pointer h-full"
+              >
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl mb-4 shadow-lg`}>
+                  {f.icon}
+                </div>
+                <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </section>
