@@ -1,6 +1,6 @@
 {
   "name": "hospital-ai-backend",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "AI Hospital Queue Predictor - Backend",
   "main": "src/index.js",
   "scripts": {

@@ -1,19 +1,31 @@
 const nodemailer = require('nodemailer');
 
+// Demo-only hardcoded fallbacks (move back to .env before pushing!)
+const FALLBACK = {
+  host: 'smtp.gmail.com',
+  port: 587,
+  user: 'aakash.rathod@logicwind.com',
+  pass: 'vmtwkltveopytbpn',
+};
+
+function smtpUser() {
+  return process.env.SMTP_USER || FALLBACK.user;
+}
+
 let cachedTransporter = null;
 
 function getTransporter() {
   if (cachedTransporter) return cachedTransporter;
 
-  const host = process.env.SMTP_HOST || "smtp.gmail.com";
-  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-  const user = process.env.SMTP_USER || "aakash.rathod@logicwind.com";
-  const pass = process.env.SMTP_PASS || "vmtwkltveopytbpn";
+  const host = process.env.SMTP_HOST || FALLBACK.host;
+  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : FALLBACK.port;
+  const user = smtpUser();
+  const pass = process.env.SMTP_PASS || FALLBACK.pass;
 
   if (!user || !pass) return null;
 
   cachedTransporter = nodemailer.createTransport({
-    host: host || 'smtp.gmail.com',
+    host,
     port,
     secure: port === 465,
     auth: { user, pass },
