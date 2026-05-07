@@ -19,7 +19,7 @@ app.use(express.json());
 
 // Health check
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Hospital AI Backend running', version: package.version });
+  res.json({ status: 'ok', message: 'Queue AI Backend running', version: package.version });
 });
 
 // Routes

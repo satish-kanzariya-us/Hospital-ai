@@ -1,7 +1,7 @@
 const { google } = require('googleapis');
 
 function getGmailClient() {
-  const clientId     = process.env.GMAIL_CLIENT_ID;
+  const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
   const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
 
@@ -47,7 +47,7 @@ async function sendViaGmail({ to, subject, html, text }) {
 
   const from = process.env.GMAIL_FROM || process.env.GMAIL_CLIENT_ID;
 
-  const raw = buildRawMime({ from: `Hospital AI <${from}>`, to, subject, html, text });
+  const raw = buildRawMime({ from: `Queue AI <${from}>`, to, subject, html, text });
 
   await gmail.users.messages.send({ userId: 'me', requestBody: { raw } });
   return { sent: true };

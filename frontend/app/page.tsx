@@ -57,24 +57,12 @@ export default function Home() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm text-gray-500 max-w-lg"
+            className="text-sm text-gray-500 whitespace-nowrap"
           >
             Predict hospital wait times, find the shortest queue, and chat with an AI assistant — all powered by real India hospital data.
           </motion.p>
         </div>
 
-        <Link href="/dashboard" className="relative shrink-0">
-          <motion.button
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-200 text-sm whitespace-nowrap"
-          >
-            📊 Open Dashboard
-          </motion.button>
-        </Link>
       </section>
 
       {/* Feature cards */}

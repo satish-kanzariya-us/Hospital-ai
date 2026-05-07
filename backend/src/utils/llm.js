@@ -96,7 +96,7 @@ async function callLLM(message, context = {}) {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'https://hospital-ai.app',
-      'X-Title': 'Hospital AI Queue Predictor',
+      'X-Title': 'Queue AI Queue Predictor',
     },
     body: JSON.stringify({
       models: MODELS,

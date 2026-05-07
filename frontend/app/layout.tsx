@@ -10,7 +10,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "HospitalAI — Smart Queue Predictor",
+  title: "Queue AI — Smart Queue Predictor",
   description: "Predict hospital wait times, get recommendations, and chat with an AI assistant.",
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
           <LiveStatsBanner />
           <main className="flex-1">{children}</main>
           <footer className="text-center text-xs text-gray-400 py-4 border-t border-gray-200">
-            HospitalAI &copy; 2025 — Hackathon Project
+            Queue AI &copy; 2025 — Hackathon Project
           </footer>
         </div>
       </body>

@@ -76,7 +76,7 @@ Return only valid JSON.`;
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'https://hospital-ai.app',
-      'X-Title': 'Hospital AI Symptom Triage',
+      'X-Title': 'Queue AI Symptom Triage',
     },
     body: JSON.stringify({
       models: MODELS,

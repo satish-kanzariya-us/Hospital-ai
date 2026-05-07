@@ -1,5 +1,5 @@
 /**
- * Hospital AI — Integration Test Suite
+ * Queue AI — Integration Test Suite
  * Run with: node src/tests/run-tests.js
  * (Server must be running on port 4000)
  */
@@ -166,8 +166,8 @@ async function testSimulationLogic() {
   const hospital = hospitals.find((h) => h.id === 'h4'); // KEM Mumbai (Government, high load)
   const timeline = buildDayTimeline(hospital, 'General');
 
-  const slot9am  = timeline[9];
-  const slot3am  = timeline[3];
+  const slot9am = timeline[9];
+  const slot3am = timeline[3];
   const slot18pm = timeline[18];
 
   assert('3 AM has low queue', slot3am.queueLength < 10, `got ${slot3am.queueLength}`);
@@ -184,7 +184,7 @@ async function testSimulationLogic() {
 
 async function run() {
   console.log('╔══════════════════════════════════════╗');
-  console.log('║   Hospital AI — Integration Tests    ║');
+  console.log('║   Queue AI — Integration Tests    ║');
   console.log('╚══════════════════════════════════════╝');
 
   try {

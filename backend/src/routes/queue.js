@@ -102,14 +102,14 @@ router.get('/test-mail', async (req, res) => {
     patientName: 'Test Patient',
     phone: '+91 111111111111111',
     token: 42,
-    hospitalName: 'Hospital AI Demo',
+    hospitalName: 'Queue AI Demo',
     specialty: 'General Medicine',
     currentToken: 40,
     patientsAhead: 1,
     estimatedWaitMinutes: 10,
     etaTime: '11:30 AM',
     recommendedLeaveTime: '11:15 AM',
-    message: 'This is a test email from Hospital AI.',
+    message: 'This is a test email from Queue AI.',
     symptomAnalysis: null,
   };
 

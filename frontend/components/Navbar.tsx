@@ -6,10 +6,10 @@ import { motion } from "framer-motion";
 const links = [
   { href: "/",             label: "Home",      icon: "🏠" },
   { href: "/dashboard",    label: "Dashboard", icon: "📊" },
-  { href: "/queue",        label: "My Queue",  icon: "🎫" },
-  { href: "/receptionist", label: "Staff",     icon: "🏥" },
-  { href: "/recommend",    label: "Recommend", icon: "🏆" },
-  { href: "/chat",         label: "AI Chat",   icon: "🤖" },
+  { href: "/queue",        label: "Smart Queue",      icon: "🎫" },
+  { href: "/receptionist", label: "Receptionist",    icon: "🏥" },
+  { href: "/recommend",    label: "Recommendations", icon: "🏆" },
+  { href: "/chat",         label: "AI Assistant", icon: "🤖" },
 ];
 
 export default function Navbar() {
@@ -27,7 +27,7 @@ export default function Navbar() {
         </motion.div>
         <div>
           <span className="font-extrabold text-lg bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            HospitalAI
+            Queue AI
           </span>
           <div>
             <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium">
@@ -59,7 +59,7 @@ export default function Navbar() {
 
       {/* Footer hint */}
       <div className="px-5 py-4 border-t border-gray-100">
-        <p className="text-xs text-gray-400">HospitalAI &copy; 2025</p>
+        <p className="text-xs text-gray-400">Queue AI &copy; 2025</p>
       </div>
     </aside>
   );

@@ -17,7 +17,7 @@ interface Message { role: "user" | "assistant"; text: string; }
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", text: "Hi! I'm HospitalAI 🤖\n\nTell me your city and what you need — I'll find the shortest queue and best hospital for you." },
+    { role: "assistant", text: "Hi! I'm Queue AI 🤖\n\nTell me your city and what you need — I'll find the shortest queue and best hospital for you." },
   ]);
   const [input, setInput]     = useState("");
   const [city, setCity]       = useState("Delhi");

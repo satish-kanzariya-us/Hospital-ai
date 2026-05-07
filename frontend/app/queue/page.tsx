@@ -124,7 +124,7 @@ function BookingForm({ onBooked }: { onBooked: (b: BookResponse) => void }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl max-w-lg mx-auto"
+      className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl"
     >
       <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Book Your Spot</h2>
       <p className="text-gray-500 text-sm mb-6">Get a token number and know exactly when to arrive.</p>
@@ -286,7 +286,7 @@ function TokenCard({ booking }: { booking: BookResponse }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="max-w-md mx-auto space-y-4"
+      className="space-y-4"
     >
       {/* Token card */}
       <div className={`relative bg-gradient-to-br ${cfg.bg} rounded-3xl p-1 shadow-2xl`}>
@@ -408,7 +408,7 @@ export default function QueuePage() {
   const [booking, setBooking] = useState<BookResponse | null>(null);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-lg mx-auto px-4 py-10">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <h1 className="text-4xl font-extrabold text-gray-900 mb-1">
           🎫 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Smart Queue</span>
