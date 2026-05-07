@@ -21,13 +21,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">
+      <body className="min-h-screen flex bg-gray-50 text-gray-900">
         <Navbar />
-        <LiveStatsBanner />
-        <main className="flex-1">{children}</main>
-        <footer className="text-center text-xs text-gray-400 py-4 border-t border-gray-200">
-          HospitalAI &copy; 2025 — Hackathon Project
-        </footer>
+        <div className="flex-1 flex flex-col min-w-0">
+          <LiveStatsBanner />
+          <main className="flex-1">{children}</main>
+          <footer className="text-center text-xs text-gray-400 py-4 border-t border-gray-200">
+            HospitalAI &copy; 2025 — Hackathon Project
+          </footer>
+        </div>
       </body>
     </html>
   );

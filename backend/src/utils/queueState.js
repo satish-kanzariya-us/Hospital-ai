@@ -49,6 +49,11 @@ function book(hospitalId, specialty, patientName, contact = {}) {
   const q = queues[k];
   if (!q) return null;
 
+  // Snapshot queue length before adding this patient
+  const patientsAheadAtBooking = q.appointments.filter(
+    (a) => a.status === 'waiting' || a.status === 'serving'
+  ).length;
+
   const tokenNumber = q.nextToken++;
   const appt = {
     tokenNumber,
@@ -58,6 +63,7 @@ function book(hospitalId, specialty, patientName, contact = {}) {
     symptomAnalysis: contact.symptomAnalysis || null,
     status: 'waiting',   // 'waiting' | 'serving' | 'attended' | 'skipped'
     bookedAt: new Date().toISOString(),
+    patientsAheadAtBooking,
   };
   q.appointments.push(appt);
 

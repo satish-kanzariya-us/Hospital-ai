@@ -1,35 +1,52 @@
-const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+const { google } = require('googleapis');
 
-function brevoSender() {
-  return {
-    email: process.env.MAIL_FROM_EMAIL || 'aakashrathodsky@gmail.com',
-    name: process.env.MAIL_FROM_NAME || 'Hospital AI',
-  };
+function getGmailClient() {
+  const clientId     = process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+
+  if (!clientId || !clientSecret || !refreshToken) return null;
+
+  const oauth2 = new google.auth.OAuth2(clientId, clientSecret, 'https://developers.google.com/oauthplayground');
+  oauth2.setCredentials({ refresh_token: refreshToken });
+  return google.gmail({ version: 'v1', auth: oauth2 });
 }
 
-async function sendViaBrevo({ to, subject, html, text }) {
+function buildRawMime({ from, to, subject, html, text }) {
+  const boundary = `boundary_${Date.now()}`;
+  const mime = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/plain; charset="UTF-8"`,
+    ``,
+    text,
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/html; charset="UTF-8"`,
+    ``,
+    html,
+    ``,
+    `--${boundary}--`,
+  ].join('\r\n');
 
-  const res = await fetch(BREVO_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'api-key': process.env.BREVO_API_KEY,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      sender: brevoSender(),
-      to: [{ email: to }],
-      subject,
-      htmlContent: html,
-      textContent: text,
-    }),
-  });
+  return Buffer.from(mime).toString('base64url');
+}
 
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    return { sent: false, reason: body.message || `Brevo HTTP ${res.status}`, status: res.status, body };
-  }
-  return { sent: true, data: body };
+async function sendViaGmail({ to, subject, html, text }) {
+  const gmail = getGmailClient();
+  if (!gmail) return { sent: false, reason: 'Gmail API not configured (missing GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET / GMAIL_REFRESH_TOKEN)' };
+
+  const from = process.env.GMAIL_FROM || process.env.GMAIL_CLIENT_ID;
+
+  const raw = buildRawMime({ from: `Hospital AI <${from}>`, to, subject, html, text });
+
+  await gmail.users.messages.send({ userId: 'me', requestBody: { raw } });
+  return { sent: true };
 }
 
 function severityChip(severity) {
@@ -122,7 +139,7 @@ function buildBookingHtml(payload) {
 }
 
 async function sendBookingEmail(to, payload) {
-  return sendViaBrevo({
+  return sendViaGmail({
     to,
     subject: `Token #${payload.token} confirmed — ${payload.hospitalName}`,
     html: buildBookingHtml(payload),
@@ -181,7 +198,7 @@ function buildHeadsUpHtml(payload) {
 }
 
 async function sendHeadsUpEmail(to, payload) {
-  return sendViaBrevo({
+  return sendViaGmail({
     to,
     subject: `🏥 You're next — head to ${payload.hospitalName} now`,
     html: buildHeadsUpHtml(payload),

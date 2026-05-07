@@ -6,166 +6,133 @@ const cities = ["Delhi", "Mumbai", "Chennai", "Bangalore", "Chandigarh"];
 const specialties = ["General", "Cardiology", "Neurology", "Orthopedics", "Pediatrics", "Oncology", "Gynecology"];
 
 const features = [
-  { icon: "🎫", title: "Smart Token Queue",     desc: "Book a token, get your real ETA, and arrive exactly when it's your turn.", color: "from-blue-500 to-cyan-500",   href: "/queue" },
-  { icon: "🏥", title: "Receptionist Dashboard",desc: "Mark attended, skip, add doctor delays — all patients update instantly.", color: "from-indigo-500 to-purple-500", href: "/receptionist" },
-  { icon: "🤖", title: "AI Chat Assistant",     desc: "Ask anything in plain language. Emergency detection built in.",           color: "from-purple-500 to-pink-500",  href: "/chat" },
-  { icon: "🏆", title: "Smart Recommendations", desc: "Least crowded hospital ranked by wait time, rating, and occupancy.",     color: "from-pink-500 to-rose-500",    href: "/recommend" },
+  { icon: "🎫", title: "Smart Token Queue",      desc: "Book a token, get your real ETA, and arrive exactly when it's your turn.", color: "from-blue-500 to-cyan-500",   href: "/queue" },
+  { icon: "🏥", title: "Receptionist Dashboard", desc: "Mark attended, skip, add doctor delays — all patients update instantly.",   color: "from-indigo-500 to-purple-500", href: "/receptionist" },
+  { icon: "🤖", title: "AI Chat Assistant",      desc: "Ask anything in plain language. Emergency detection built in.",            color: "from-purple-500 to-pink-500",  href: "/chat" },
+  { icon: "🏆", title: "Smart Recommendations",  desc: "Least crowded hospital ranked by wait time, rating, and occupancy.",      color: "from-pink-500 to-rose-500",    href: "/recommend" },
 ];
 
 export default function Home() {
   return (
-    <div className="overflow-hidden">
+    <div className="h-full px-6 py-5 flex flex-col gap-5 overflow-hidden">
+
       {/* Hero */}
-      <section className="relative min-h-[55vh] flex items-center justify-center px-4 py-16">
-        {/* Animated background blobs */}
+      <section className="relative flex items-center justify-between gap-6">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-32 -left-32 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply opacity-40 blur-3xl"
+            className="absolute -top-16 -left-16 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply opacity-30 blur-3xl"
           />
           <motion.div
             animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply opacity-40 blur-3xl"
-          />
-          <motion.div
-            animate={{ x: [0, 20, 0], y: [0, -30, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply opacity-30 blur-3xl"
+            className="absolute -top-16 right-0 w-64 h-64 bg-indigo-200 rounded-full mix-blend-multiply opacity-30 blur-3xl"
           />
         </div>
 
-        <div className="relative text-center max-w-4xl mx-auto">
+        <div className="relative">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-white/80 border border-blue-200 text-blue-600 text-sm font-semibold px-4 py-2 rounded-full mb-6 shadow-sm"
+            className="inline-flex items-center gap-2 bg-white/80 border border-blue-200 text-blue-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-3 shadow-sm"
           >
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
             AI-powered · Live hospital data
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-4 leading-tight"
+            transition={{ delay: 0.1 }}
+            className="text-4xl font-extrabold text-gray-900 leading-tight mb-2"
           >
             Know before{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
               you go.
             </span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-500 max-w-2xl mx-auto"
+            transition={{ delay: 0.2 }}
+            className="text-sm text-gray-500 max-w-lg"
           >
             Predict hospital wait times, find the shortest queue, and chat with an AI assistant — all powered by real India hospital data.
           </motion.p>
-
         </div>
+
+        <Link href="/dashboard" className="relative shrink-0">
+          <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-200 text-sm whitespace-nowrap"
+          >
+            📊 Open Dashboard
+          </motion.button>
+        </Link>
       </section>
 
       {/* Feature cards */}
-      <section className="max-w-6xl mx-auto px-4 py-16">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl font-extrabold text-gray-900">Everything you need</h2>
-          <p className="text-gray-500 mt-2">Built for real patients, real hospitals, real India.</p>
-        </motion.div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {features.map((f, i) => (
-            <Link key={f.title} href={f.href}>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-2xl border border-gray-100 p-6 shadow-md card-hover cursor-pointer h-full"
-              >
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl mb-4 shadow-lg`}>
-                  {f.icon}
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
-              </motion.div>
-            </Link>
-          ))}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {features.map((f, i) => (
+          <Link key={f.title} href={f.href}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
+              whileHover={{ y: -4 }}
+              className="bg-white rounded-2xl border border-gray-100 p-5 shadow-md cursor-pointer h-full"
+            >
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center text-xl mb-3 shadow-md`}>
+                {f.icon}
+              </div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">{f.title}</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
+            </motion.div>
+          </Link>
+        ))}
+      </section>
+
+      {/* Cities + Specialties */}
+      <section className="bg-white rounded-2xl border border-gray-100 p-5 shadow-md">
+        <div className="flex items-start gap-6">
+          <div className="flex-1">
+            <h2 className="text-sm font-extrabold text-gray-700 mb-2.5">Explore by city</h2>
+            <div className="flex flex-wrap gap-2">
+              {cities.map((c, i) => (
+                <Link key={c} href={`/recommend?city=${c}`}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer"
+                  >
+                    📍 {c}
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-sm font-extrabold text-gray-700 mb-2.5">Specialties</h2>
+            <div className="flex flex-wrap gap-1.5">
+              {specialties.map((s) => (
+                <span key={s} className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Cities */}
-      <section className="max-w-6xl mx-auto px-4 pb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-white rounded-3xl border border-gray-100 p-10 shadow-md"
-        >
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-6 text-center">Explore by city</h2>
-          <div className="flex flex-wrap gap-3 justify-center mb-6">
-            {cities.map((c, i) => (
-              <Link key={c} href={`/recommend?city=${c}`}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.07 }}
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
-                >
-                  📍 {c}
-                </motion.div>
-              </Link>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {specialties.map((s) => (
-              <span key={s} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                {s}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* CTA */}
-      <section className="max-w-6xl mx-auto px-4 pb-16">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-12 text-center text-white shadow-2xl"
-        >
-          <motion.div
-            animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"
-          />
-          <h2 className="text-3xl font-extrabold mb-3 relative z-10">Ready to skip the queue?</h2>
-          <p className="text-blue-100 mb-8 text-lg relative z-10">Select your city, pick a specialty, and let AI find the best hospital in seconds.</p>
-          <Link href="/dashboard">
-            <motion.button
-              whileHover={{ scale: 1.05, backgroundColor: "#f0f4ff" }}
-              whileTap={{ scale: 0.97 }}
-              className="relative z-10 inline-block bg-white text-blue-600 font-bold px-8 py-4 rounded-2xl shadow-lg text-base"
-            >
-              📊 Open Dashboard
-            </motion.button>
-          </Link>
-        </motion.div>
-      </section>
     </div>
   );
 }

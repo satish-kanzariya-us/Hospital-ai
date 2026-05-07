@@ -38,8 +38,21 @@ router.post('/book', async (req, res) => {
     email: cleanEmail || null,
     symptomAnalysis: symptomAnalysis || null,
   });
-  const eta = qs.etaForToken(hospitalId, specialty, appt.tokenNumber);
   const snap = qs.snapshot(qs.queues[`${hospitalId}::${specialty}`]);
+
+  const patientsAhead = appt.patientsAheadAtBooking;
+  const estimatedWaitMinutes = patientsAhead * 30;
+  const etaDate = new Date(Date.now() + estimatedWaitMinutes * 60_000);
+  const leaveDate = new Date(Date.now() + Math.max(0, estimatedWaitMinutes - 25) * 60_000);
+  const fmt = (d) => d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const etaTime = fmt(etaDate);
+  const recommendedLeaveTime = fmt(leaveDate);
+  const urgency = patientsAhead === 0 ? 'serving' : patientsAhead === 1 ? 'next' : 'waiting';
+  const message = patientsAhead === 0
+    ? "You're being seen right now!"
+    : patientsAhead === 1
+      ? 'Get ready — you are next in line!'
+      : `Your turn is expected around ${etaTime}. Leave by ${recommendedLeaveTime}.`;
 
   const payload = {
     success: true,
@@ -51,23 +64,28 @@ router.post('/book', async (req, res) => {
     specialty,
     currentToken: snap.currentToken,
     totalWaiting: snap.waitingCount,
-    patientsAhead: eta.patientsAhead,
-    estimatedWaitMinutes: eta.estimatedWaitMinutes,
-    etaTime: eta.etaTime,
-    recommendedLeaveTime: eta.recommendedLeaveTime,
-    message: eta.message,
-    urgency: eta.urgency,
+    patientsAhead,
+    estimatedWaitMinutes,
+    etaTime,
+    recommendedLeaveTime,
+    message,
+    urgency,
     symptomAnalysis: symptomAnalysis || null,
   };
 
-  // Fire-and-forget email — don't block the booking response
+  // Fire-and-forget email
+  console.log('[book] email received:', cleanEmail || '(none)');
   if (cleanEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    console.log('[book] sending booking email to:', cleanEmail);
     sendBookingEmail(cleanEmail, payload)
       .then((r) => {
-        if (!r.sent) console.warn('[mail] not sent:', r.reason);
+        if (r.sent) console.log('[mail] booking email sent to:', cleanEmail);
+        else console.warn('[mail] not sent:', r.reason);
       })
-      .catch((err) => console.error('[mail] failed:', err.message));
+      .catch((err) => console.error('[mail] failed:', err.message, err.stack));
     payload.emailQueued = true;
+  } else {
+    console.log('[book] email skipped — empty or invalid');
   }
 
   res.json(payload);
@@ -97,7 +115,6 @@ router.get('/test-mail', async (req, res) => {
 
   try {
     const result = await sendBookingEmail(email, samplePayload);
-    console.log("🚀 ~ result:", result)
     if (!result.sent) {
       return res.status(500).json({ sent: false, to: email, result });
     }
