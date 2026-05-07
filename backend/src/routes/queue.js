@@ -44,7 +44,7 @@ router.post('/book', async (req, res) => {
   const estimatedWaitMinutes = patientsAhead * 30;
   const etaDate = new Date(Date.now() + estimatedWaitMinutes * 60_000);
   const leaveDate = new Date(Date.now() + Math.max(0, estimatedWaitMinutes - 25) * 60_000);
-  const fmt = (d) => d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const fmt = (d) => d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' });
   const etaTime = fmt(etaDate);
   const recommendedLeaveTime = fmt(leaveDate);
   const urgency = patientsAhead === 0 ? 'serving' : patientsAhead === 1 ? 'next' : 'waiting';

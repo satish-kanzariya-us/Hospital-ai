@@ -3,6 +3,11 @@ const router = express.Router();
 const hospitals = require('../data/hospitals.json');
 const { calculateWaitTime } = require('../utils/waitTime');
 const { getLiveQueue, getBestHours } = require('../utils/simulate');
+const qs = require('../utils/queueState');
+
+function isPeakHour(hour) {
+  return (hour >= 9 && hour < 12) || (hour >= 17 && hour < 20);
+}
 
 /**
  * POST /predict
@@ -28,25 +33,37 @@ router.post('/', (req, res) => {
     });
   }
 
-  // Use simulated live queue unless an explicit currentTime was passed (for testing)
-  let liveHospital = hospital;
-  if (!currentTime) {
-    const simulatedQueue = getLiveQueue(hospital, specialty);
-    liveHospital = {
+  const bestTimes = getBestHours(hospital, specialty);
+  const capacity = hospital.queues[specialty]?.capacity || 60;
+
+  // Use real queue data if it exists, otherwise fall back to simulation
+  const realQueue = qs.queues[`${hospitalId}::${specialty}`];
+
+  let waitTime, queueLength, occupancyPct, peakHour, confidence, dataSource;
+
+  if (realQueue) {
+    queueLength = realQueue.appointments.filter(
+      (a) => a.status === 'waiting' || a.status === 'serving'
+    ).length;
+    occupancyPct = Math.round((queueLength / capacity) * 100);
+    peakHour = isPeakHour(new Date().getHours());
+    waitTime = Math.max(0, queueLength * 30 + realQueue.delayMinutes);
+    confidence = Math.min(95, Math.max(55, 90 - Math.floor(occupancyPct / 10) * 3 - (peakHour ? 5 : 0)));
+    dataSource = 'Live queue data';
+  } else {
+    const simulatedQueue = currentTime ? hospital.queues[specialty]?.current : getLiveQueue(hospital, specialty);
+    const liveHospital = {
       ...hospital,
       queues: {
         ...hospital.queues,
         [specialty]: { ...hospital.queues[specialty], current: simulatedQueue },
       },
     };
+    const result = calculateWaitTime(liveHospital, specialty, currentTime);
+    if (!result) return res.status(500).json({ error: 'Could not calculate wait time' });
+    ({ waitTime, queueLength, occupancyPct, peakHour, confidence } = result);
+    dataSource = 'Based on past visit patterns';
   }
-
-  const result = calculateWaitTime(liveHospital, specialty, currentTime);
-  if (!result) {
-    return res.status(500).json({ error: 'Could not calculate wait time' });
-  }
-
-  const bestTimes = getBestHours(hospital, specialty);
 
   res.json({
     hospitalId: hospital.id,
@@ -57,14 +74,14 @@ router.post('/', (req, res) => {
     phone: hospital.phone,
     rating: hospital.rating,
     type: hospital.type,
-    waitTime: result.waitTime,
-    queueLength: result.queueLength,
-    capacity: result.capacity,
-    occupancyPct: result.occupancyPct,
-    peakHour: result.peakHour,
-    confidence: result.confidence,
+    waitTime,
+    queueLength,
+    capacity,
+    occupancyPct,
+    peakHour,
+    confidence,
     unit: 'minutes',
-    dataSource: 'Based on past visit patterns',
+    dataSource,
     bestTimesToVisit: bestTimes,
   });
 });
