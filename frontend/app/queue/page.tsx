@@ -14,42 +14,42 @@ import {
 import SymptomBadge from "@/components/SymptomBadge";
 
 const HOSPITALS: Record<string, { name: string; city: string; specialties: string[] }> = {
-  h1:  { name: "AIIMS Delhi",                  city: "Delhi",      specialties: ["General","Cardiology","Neurology","Orthopedics","Pediatrics"] },
-  h2:  { name: "Fortis Hospital Gurugram",      city: "Delhi",      specialties: ["General","Cardiology","Oncology","Orthopedics"] },
-  h3:  { name: "Max Super Speciality Hospital", city: "Delhi",      specialties: ["General","Neurology","Pediatrics","Gynecology"] },
-  h4:  { name: "KEM Hospital Mumbai",           city: "Mumbai",     specialties: ["General","Surgery","Cardiology","Pediatrics","Orthopedics"] },
-  h5:  { name: "Lilavati Hospital Mumbai",      city: "Mumbai",     specialties: ["General","Cardiology","Oncology","Neurology","Gynecology"] },
-  h6:  { name: "Apollo Hospital Chennai",       city: "Chennai",    specialties: ["General","Cardiology","Neurology","Oncology","Orthopedics"] },
-  h7:  { name: "Rajiv Gandhi Govt. Hospital",   city: "Chennai",    specialties: ["General","Surgery","Pediatrics","Orthopedics"] },
-  h8:  { name: "Narayana Health Bangalore",     city: "Bangalore",  specialties: ["General","Cardiology","Neurology","Pediatrics","Oncology"] },
-  h9:  { name: "Victoria Hospital Bangalore",   city: "Bangalore",  specialties: ["General","Surgery","Orthopedics","Gynecology"] },
-  h10: { name: "PGIMER Chandigarh",             city: "Chandigarh", specialties: ["General","Cardiology","Neurology","Oncology","Pediatrics"] },
+  h1: { name: "AIIMS Delhi", city: "Delhi", specialties: ["General", "Cardiology", "Neurology", "Orthopedics", "Pediatrics"] },
+  h2: { name: "Fortis Hospital Gurugram", city: "Delhi", specialties: ["General", "Cardiology", "Oncology", "Orthopedics"] },
+  h3: { name: "Max Super Speciality Hospital", city: "Delhi", specialties: ["General", "Neurology", "Pediatrics", "Gynecology"] },
+  h4: { name: "KEM Hospital Mumbai", city: "Mumbai", specialties: ["General", "Surgery", "Cardiology", "Pediatrics", "Orthopedics"] },
+  h5: { name: "Lilavati Hospital Mumbai", city: "Mumbai", specialties: ["General", "Cardiology", "Oncology", "Neurology", "Gynecology"] },
+  h6: { name: "Apollo Hospital Chennai", city: "Chennai", specialties: ["General", "Cardiology", "Neurology", "Oncology", "Orthopedics"] },
+  h7: { name: "Rajiv Gandhi Govt. Hospital", city: "Chennai", specialties: ["General", "Surgery", "Pediatrics", "Orthopedics"] },
+  h8: { name: "Narayana Health Bangalore", city: "Bangalore", specialties: ["General", "Cardiology", "Neurology", "Pediatrics", "Oncology"] },
+  h9: { name: "Victoria Hospital Bangalore", city: "Bangalore", specialties: ["General", "Surgery", "Orthopedics", "Gynecology"] },
+  h10: { name: "PGIMER Chandigarh", city: "Chandigarh", specialties: ["General", "Cardiology", "Neurology", "Oncology", "Pediatrics"] },
 };
 
 const URGENCY_CONFIG: Record<UrgencyLevel, { bg: string; border: string; icon: string; pulse: boolean }> = {
-  serving:   { bg: "from-green-500 to-emerald-500",    border: "border-green-400", icon: "🟢", pulse: true  },
-  next:      { bg: "from-blue-500 to-indigo-500",      border: "border-blue-400",  icon: "🔵", pulse: true  },
-  "leave-now": { bg: "from-orange-500 to-amber-500",   border: "border-orange-400",icon: "🟠", pulse: true  },
-  "get-ready": { bg: "from-yellow-500 to-orange-400",  border: "border-yellow-400",icon: "🟡", pulse: false },
-  delayed:   { bg: "from-red-500 to-rose-500",         border: "border-red-400",   icon: "🔴", pulse: false },
-  waiting:   { bg: "from-slate-500 to-gray-500",       border: "border-gray-300",  icon: "⚪", pulse: false },
-  attended:  { bg: "from-emerald-500 to-teal-500",     border: "border-emerald-400",icon: "✅", pulse: false },
-  skipped:   { bg: "from-gray-400 to-gray-500",        border: "border-gray-300",  icon: "⏭️", pulse: false },
+  serving: { bg: "from-green-500 to-emerald-500", border: "border-green-400", icon: "🟢", pulse: true },
+  next: { bg: "from-blue-500 to-indigo-500", border: "border-blue-400", icon: "🔵", pulse: true },
+  "leave-now": { bg: "from-orange-500 to-amber-500", border: "border-orange-400", icon: "🟠", pulse: true },
+  "get-ready": { bg: "from-yellow-500 to-orange-400", border: "border-yellow-400", icon: "🟡", pulse: false },
+  delayed: { bg: "from-red-500 to-rose-500", border: "border-red-400", icon: "🔴", pulse: false },
+  waiting: { bg: "from-slate-500 to-gray-500", border: "border-gray-300", icon: "⚪", pulse: false },
+  attended: { bg: "from-emerald-500 to-teal-500", border: "border-emerald-400", icon: "✅", pulse: false },
+  skipped: { bg: "from-gray-400 to-gray-500", border: "border-gray-300", icon: "⏭️", pulse: false },
 };
 
 // ─── Step 1: Booking form ─────────────────────────────────────────────────────
 
 function BookingForm({ onBooked }: { onBooked: (b: BookResponse) => void }) {
   const [hospitalId, setHospitalId] = useState("h1");
-  const [specialty, setSpecialty]   = useState("General");
-  const [name, setName]             = useState("");
-  const [email, setEmail]           = useState("");
-  const [phone, setPhone]           = useState("");
-  const [problem, setProblem]       = useState("");
-  const [analysis, setAnalysis]     = useState<SymptomAnalysis | null>(null);
-  const [analyzing, setAnalyzing]   = useState(false);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState("");
+  const [specialty, setSpecialty] = useState("General");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [problem, setProblem] = useState("");
+  const [analysis, setAnalysis] = useState<SymptomAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const availableSpecialties = HOSPITALS[hospitalId]?.specialties ?? [];
 

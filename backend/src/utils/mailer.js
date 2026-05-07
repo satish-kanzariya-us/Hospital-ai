@@ -1,40 +1,35 @@
-const nodemailer = require('nodemailer');
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
-// Demo-only hardcoded fallbacks (move back to .env before pushing!)
-const FALLBACK = {
-  host: 'smtp.gmail.com',
-  port: 587,
-  user: 'aakash.rathod@logicwind.com',
-  pass: 'vmtwkltveopytbpn',
-};
-
-function smtpUser() {
-  return process.env.SMTP_USER || FALLBACK.user;
+function brevoSender() {
+  return {
+    email: process.env.MAIL_FROM_EMAIL || 'aakashrathodsky@gmail.com',
+    name: process.env.MAIL_FROM_NAME || 'Hospital AI',
+  };
 }
 
-let cachedTransporter = null;
+async function sendViaBrevo({ to, subject, html, text }) {
 
-function getTransporter() {
-  if (cachedTransporter) return cachedTransporter;
-
-  const host = process.env.SMTP_HOST || FALLBACK.host;
-  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : FALLBACK.port;
-  const user = smtpUser();
-  const pass = process.env.SMTP_PASS || FALLBACK.pass;
-
-  if (!user || !pass) return null;
-
-  cachedTransporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-    family: 4, // force IPv4 — some hosts (e.g. Vercel/containers) lack IPv6 egress, causing ENETUNREACH
-    connectionTimeout: 15_000,
-    greetingTimeout: 15_000,
-    socketTimeout: 20_000,
+  const res = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: brevoSender(),
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text,
+    }),
   });
-  return cachedTransporter;
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return { sent: false, reason: body.message || `Brevo HTTP ${res.status}`, status: res.status, body };
+  }
+  return { sent: true, data: body };
 }
 
 function severityChip(severity) {
@@ -127,18 +122,9 @@ function buildBookingHtml(payload) {
 }
 
 async function sendBookingEmail(to, payload) {
-  const transporter = getTransporter();
-  if (!transporter) {
-    return { sent: false, reason: 'SMTP not configured' };
-  }
-
-  const from = process.env.MAIL_FROM || "aakash.rathod@logicwind.com" || `Hospital AI <${process.env.SMTP_USER || "aakash.rathod@logicwind.com"}>`;
-  const subject = `Token #${payload.token} confirmed — ${payload.hospitalName}`;
-
-  const data = await transporter.sendMail({
-    from,
+  return sendViaBrevo({
     to,
-    subject,
+    subject: `Token #${payload.token} confirmed — ${payload.hospitalName}`,
     html: buildBookingHtml(payload),
     text: `Hi ${payload.patientName},
 
@@ -152,8 +138,6 @@ Leave home by: ${payload.recommendedLeaveTime}
 
 ${payload.message || ''}`,
   });
-
-  return { sent: true, data };
 }
 
 function buildHeadsUpHtml(payload) {
@@ -197,16 +181,9 @@ function buildHeadsUpHtml(payload) {
 }
 
 async function sendHeadsUpEmail(to, payload) {
-  const transporter = getTransporter();
-  if (!transporter) return { sent: false, reason: 'SMTP not configured' };
-
-  const from = process.env.MAIL_FROM || "aakash.rathod@logicwind.com" || `Hospital AI <${process.env.SMTP_USER || "aakash.rathod@logicwind.com"}>`;
-  const subject = `🏥 You're next — head to ${payload.hospitalName} now`;
-
-  const response = await transporter.sendMail({
-    from,
+  return sendViaBrevo({
     to,
-    subject,
+    subject: `🏥 You're next — head to ${payload.hospitalName} now`,
     html: buildHeadsUpHtml(payload),
     text: `Hi ${payload.patientName},
 
@@ -217,9 +194,6 @@ ${payload.etaTime ? `Expected turn: ${payload.etaTime}` : ''}
 
 Please head to the hospital right away so you don't miss your turn.`,
   });
-  console.log("🚀 ~ sendHeadsUpEmail ~ response:", response)
-
-  return { sent: true, response };
 }
 
 module.exports = { sendBookingEmail, sendHeadsUpEmail };

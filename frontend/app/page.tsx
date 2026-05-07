@@ -12,18 +12,11 @@ const features = [
   { icon: "🏆", title: "Smart Recommendations", desc: "Least crowded hospital ranked by wait time, rating, and occupancy.",     color: "from-pink-500 to-rose-500",    href: "/recommend" },
 ];
 
-const stats = [
-  { value: "10+", label: "Hospitals" },
-  { value: "5",   label: "Cities" },
-  { value: "50",  label: "Tests Passing" },
-  { value: "24h", label: "Simulation" },
-];
-
 export default function Home() {
   return (
     <div className="overflow-hidden">
       {/* Hero */}
-      <section className="relative min-h-[88vh] flex items-center justify-center px-4 py-20">
+      <section className="relative min-h-[55vh] flex items-center justify-center px-4 py-16">
         {/* Animated background blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
@@ -70,60 +63,11 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-500 max-w-2xl mx-auto mb-10"
+            className="text-xl text-gray-500 max-w-2xl mx-auto"
           >
             Predict hospital wait times, find the shortest queue, and chat with an AI assistant — all powered by real India hospital data.
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-wrap gap-4 justify-center mb-16"
-          >
-            <Link href="/queue">
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(37,99,235,0.3)" }}
-                whileTap={{ scale: 0.97 }}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 text-base"
-              >
-                🎫 Get My Token
-              </motion.button>
-            </Link>
-            <Link href="/receptionist">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                className="px-8 py-4 bg-white text-indigo-600 font-bold rounded-2xl border-2 border-indigo-200 shadow-md text-base"
-              >
-                🏥 Receptionist View
-              </motion.button>
-            </Link>
-            <Link href="/chat">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                className="px-8 py-4 bg-white text-blue-600 font-bold rounded-2xl border-2 border-blue-200 shadow-md text-base"
-              >
-                🤖 Ask AI
-              </motion.button>
-            </Link>
-          </motion.div>
-
-          {/* Stats row */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-4 gap-4 max-w-xl mx-auto"
-          >
-            {stats.map((s) => (
-              <div key={s.label} className="bg-white/80 rounded-2xl p-3 shadow-sm border border-white">
-                <p className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{s.value}</p>
-                <p className="text-xs text-gray-500">{s.label}</p>
-              </div>
-            ))}
-          </motion.div>
         </div>
       </section>
 
